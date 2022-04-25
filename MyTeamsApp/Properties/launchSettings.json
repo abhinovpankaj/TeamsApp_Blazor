@@ -1,0 +1,32 @@
+{
+  "iisSettings": {
+    "windowsAuthentication": false,
+    "anonymousAuthentication": true,
+    "iisExpress": {
+      "applicationUrl": "http://localhost:50086",
+      "sslPort": 44357
+    }
+  },
+  "profiles": {
+    "IIS Express": {
+      "commandName": "IISExpress",
+      "launchBrowser": true,
+      "launchUrl": "https://teams.microsoft.com/l/app/203cd074-0c43-4765-9799-c6ba1cbf2f83?installAppPackage=true&webjoin=true&appTenantId=c70998c4-7b15-4fd7-9f44-f22cf6c4b492&login_hint=point5nyble@4p0d2j.onmicrosoft.com",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      },
+      "hotReloadProfile": "aspnetcore"
+    },
+    "MyTeamsApp": {
+      "commandName": "Project",
+      "dotnetRunMessages": "true",
+      "launchBrowser": true,
+      "launchUrl": "https://teams.microsoft.com/l/app/203cd074-0c43-4765-9799-c6ba1cbf2f83?installAppPackage=true&webjoin=true&appTenantId=c70998c4-7b15-4fd7-9f44-f22cf6c4b492&login_hint=point5nyble@4p0d2j.onmicrosoft.com",
+      "applicationUrl": "https://localhost:44357;http://localhost:50086",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      },
+      "hotReloadProfile": "aspnetcore"
+    }
+  }
+}

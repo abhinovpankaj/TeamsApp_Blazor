@@ -1,0 +1,106 @@
+﻿@using Microsoft.Extensions.Configuration
+@using Microsoft.AspNetCore.Hosting
+@using Microsoft.Extensions.Hosting
+@using Microsoft.TeamsFx.Model
+@using System.Security.Cryptography 
+@using System.IO 
+@using System.Text
+@inject TeamsFx teamsfx
+@inject TeamsUserCredential teamsUserCredential
+@inject MicrosoftTeams MicrosoftTeams
+@inject IWebHostEnvironment HostEnvironment
+@inject IConfiguration Configuration
+@inject NavigationManager MyNavigationManager
+
+@if (isLoading)
+{
+    <div style="display: flex; justify-content: center; align-items: center; min-height: 100vh;">
+        <FluentProgressRing />
+    </div>
+}
+else
+{
+    <div class="welcome page">
+
+        <form action='https://ssostaging.employease.in/TeamsSSO.aspx' method='post'>
+            <input type='hidden' name='Token' value='@token'>
+        </form>
+        <script suppress-error="BL9992">
+
+        document.forms[0].submit();
+
+        </script>
+    </div>
+}
+
+
+@code {
+    string token;
+
+    bool isLoading = true;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        await base.OnAfterRenderAsync(firstRender);
+
+        if (firstRender)
+        {
+            token = await getEncryptedToken();
+            isLoading = false;
+            StateHasChanged();
+        }
+
+
+    }
+
+    protected async Task<string> getEncryptedToken()
+
+    {
+        var clientId = Configuration.GetValue<string>("CLIENT_ID");
+        var endpoint = MyNavigationManager.BaseUri;
+
+        AuthenticationConfiguration authentication = new AuthenticationConfiguration(clientId: clientId, simpleAuthEndpoint: endpoint, initiateLoginEndpoint: endpoint + "auth-start.html");
+        Configuration configuration = new Configuration(authentication);
+        await teamsfx.LoadConfigurationAsync(configuration);
+        bool isInTeams = await MicrosoftTeams.IsInTeams();
+        string userName = string.Empty;
+        if (isInTeams)
+        {
+            var user = await teamsUserCredential.GetUserInfoAsync();
+            userName = user.PreferredUserName;
+        }
+
+        var memberloginid = userName + "@" + Configuration.GetValue<string>("SecretKey") + "@" + DateTime.Now.ToString("yyyyMMddhhmmss");
+        string encrypted;
+        var Encrypt_Decrypt_key = Configuration.GetValue<string>("EncyptionKey");
+        //convert in bytes
+        byte[] keyBytes = Encoding.ASCII.GetBytes(Encrypt_Decrypt_key);
+
+        using (Aes aesAlg = Aes.Create())
+        {
+            aesAlg.Key = keyBytes;
+
+            // Create an encryptor to perform the stream transform.
+            ICryptoTransform encryptor = aesAlg.CreateEncryptor(aesAlg.Key, aesAlg.IV);
+
+            // Create the streams used for encryption.
+            using (MemoryStream msEncrypt = new MemoryStream())
+            {
+                using (CryptoStream csEncrypt = new CryptoStream(msEncrypt, encryptor, CryptoStreamMode.Write))
+                {
+                    using (StreamWriter swEncrypt = new StreamWriter(csEncrypt))
+                    {
+                        //Write all data to the stream.
+                        swEncrypt.Write(memberloginid);
+                    }
+                    encrypted = msEncrypt.ToString();
+                }
+            }
+        }
+        return encrypted;
+
+    }
+
+
+}
+
