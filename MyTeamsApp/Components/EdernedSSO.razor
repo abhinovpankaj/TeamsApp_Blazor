@@ -75,28 +75,38 @@ else
         var Encrypt_Decrypt_key = Configuration.GetValue<string>("EncyptionKey");
         //convert in bytes
         byte[] keyBytes = Encoding.ASCII.GetBytes(Encrypt_Decrypt_key);
-
-        using (Aes aesAlg = Aes.Create())
+        try
         {
-            aesAlg.Key = keyBytes;
-
-            // Create an encryptor to perform the stream transform.
-            ICryptoTransform encryptor = aesAlg.CreateEncryptor(aesAlg.Key, aesAlg.IV);
-
-            // Create the streams used for encryption.
-            using (MemoryStream msEncrypt = new MemoryStream())
+            using (Aes aesAlg = Aes.Create())
             {
-                using (CryptoStream csEncrypt = new CryptoStream(msEncrypt, encryptor, CryptoStreamMode.Write))
+                aesAlg.Key = keyBytes;
+
+                // Create an encryptor to perform the stream transform.
+                ICryptoTransform encryptor = aesAlg.CreateEncryptor(aesAlg.Key, aesAlg.IV);
+
+                // Create the streams used for encryption.
+                using (MemoryStream msEncrypt = new MemoryStream())
                 {
-                    using (StreamWriter swEncrypt = new StreamWriter(csEncrypt))
+                    using (CryptoStream csEncrypt = new CryptoStream(msEncrypt, encryptor, CryptoStreamMode.Write))
                     {
-                        //Write all data to the stream.
-                        swEncrypt.Write(memberloginid);
+                        using (StreamWriter swEncrypt = new StreamWriter(csEncrypt))
+                        {
+                            //Write all data to the stream.
+                            swEncrypt.Write(memberloginid);
+                        }
+
                     }
-                    encrypted = msEncrypt.ToString();
+
+                    encrypted = Convert.ToBase64String(msEncrypt.ToArray());
                 }
             }
         }
+        catch ( Exception ex)
+        {
+
+            throw;
+        }
+
         return encrypted;
 
     }
